@@ -3,6 +3,7 @@ package main
 import "fmt"
 import "net"
 import "bufio"
+import "os"
 
 
 type Client struct {
@@ -44,27 +45,55 @@ func (thisClient *Client) Listen(clients *[]*Client) {
 	}
 }
 
-func main() {
-	ln, err := net.Listen("tcp", ":8081")
-	if err != nil {
-		fmt.Printf("Error startin listen server\n")
-	}
-	
-	clients := make([]*Client, 0)
-	
+func AcceptClients(ln net.Listener, clients *[]*Client) {
 	for {
 		conn, err := ln.Accept()
 		if err != nil {
 			fmt.Printf("Error establishing new connection\n")
+			continue
 		}
 		
 		client := &Client{
 			incoming: make(chan string),
 			outgoing: make(chan string),
 		}
-		clients = append(clients, client)
+		*clients = append(*clients, client)
 
-		go client.Listen(&clients)
+		go client.Listen(clients)
 		handleConnection(conn, client)
+	}
+}
+
+func DoCommand(comm string) {
+	switch comm {
+	case "stop":
+		os.Exit(0)
+	default:
+		fmt.Printf("error: Unknown command \"%s\"\n", comm)
+	}
+}
+
+func main() {
+	serverPort := "8081"
+	if len(os.Args) == 2 {
+		serverPort = os.Args[1]
+	}
+
+	ln, err := net.Listen("tcp", ":" + serverPort)
+	if err != nil {
+		fmt.Printf("Error startin listen server\n")
+		os.Exit(1)
+	}
+
+	fmt.Printf("Server runned on port %s\n", serverPort)
+	
+	clients := make([]*Client, 0)
+	
+	go AcceptClients(ln, &clients)
+
+	reader := bufio.NewReader(os.Stdin)
+	for {
+		text, _ := reader.ReadString('\n')
+		DoCommand(text[:len(text)-2])
 	}
 }
