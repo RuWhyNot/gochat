@@ -1,68 +1,12 @@
 package main
 
-import "fmt"
-import "net"
-import "bufio"
-import "os"
-
-
-type Client struct {
-	incoming chan string
-	outgoing chan string
-}
-
-func Read(incoming chan string, con net.Conn) {
-	for {
-		str, err := bufio.NewReader(con).ReadString('\n')
-		if (err != nil) {
-			fmt.Printf("Error Read\n")
-			break
-		}
-		fmt.Printf(str)
-		incoming <- str
-	}
-}
-
-func Write(outcoming chan string, con net.Conn) {
-	for {
-		str := <- outcoming
-		con.Write([]byte(str))
-	}
-}
-
-func handleConnection(con net.Conn, client *Client) {
-	fmt.Printf("New user is connected!\n")
-	go Read(client.incoming, con)
-	go Write(client.outgoing, con)
-}
-
-func (thisClient *Client) Listen(clients *[]*Client) {
-	for {
-		str := <- thisClient.incoming
-		for _, otherClient := range *clients {
-			otherClient.outgoing <- str
-		}
-	}
-}
-
-func AcceptClients(ln net.Listener, clients *[]*Client) {
-	for {
-		conn, err := ln.Accept()
-		if err != nil {
-			fmt.Printf("Error establishing new connection\n")
-			continue
-		}
-		
-		client := &Client{
-			incoming: make(chan string),
-			outgoing: make(chan string),
-		}
-		*clients = append(*clients, client)
-
-		go client.Listen(clients)
-		handleConnection(conn, client)
-	}
-}
+import (
+	"fmt"
+	"net"
+	"bufio"
+	"os"
+	"strings"
+)
 
 func DoCommand(comm string) {
 	switch comm {
@@ -81,7 +25,7 @@ func main() {
 
 	ln, err := net.Listen("tcp", ":" + serverPort)
 	if err != nil {
-		fmt.Printf("Error startin listen server\n")
+		fmt.Printf("Error starting listen server\n")
 		os.Exit(1)
 	}
 
@@ -94,6 +38,6 @@ func main() {
 	reader := bufio.NewReader(os.Stdin)
 	for {
 		text, _ := reader.ReadString('\n')
-		DoCommand(text[:len(text)-2])
+		DoCommand(strings.TrimSpace(text))
 	}
 }

@@ -1,9 +1,12 @@
 package main
 
-import "fmt"
-import "net"
-import "bufio"
-import "os"
+import (
+	"fmt"
+	"net"
+	"bufio"
+	"os"
+	"strings"
+)
 
 func Read(conn net.Conn) {
 	for {
@@ -48,7 +51,7 @@ func main() {
 
 		if (text[:1] == "/") {
 			// without "/" and "\n"
-			DoCommand(text[1:len(text)-2])
+			DoCommand(strings.TrimSpace(text[1:]))
 			continue
 		}
 
