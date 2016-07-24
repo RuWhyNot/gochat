@@ -6,7 +6,7 @@ import (
 	"bufio"
 	"os"
 	"strings"
-	"./network"
+	"github.com/RuWhyNot/gogame-server/gameserver/network"
 )
 
 func DoCommand(comm string) {
