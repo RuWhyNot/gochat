@@ -6,6 +6,7 @@ import (
 	"bufio"
 	"os"
 	"strings"
+	"./network"
 )
 
 func DoCommand(comm string) {
@@ -19,21 +20,22 @@ func DoCommand(comm string) {
 
 func main() {
 	serverPort := "8081"
+
 	if len(os.Args) == 2 {
 		serverPort = os.Args[1]
 	}
 
 	ln, err := net.Listen("tcp", ":" + serverPort)
 	if err != nil {
-		fmt.Printf("Error starting listen server\n")
+		fmt.Print("Error starting listen server\n")
 		os.Exit(1)
 	}
 
-	fmt.Printf("Server runned on port %s\n", serverPort)
-	
-	clients := make([]*Client, 0)
-	
-	go AcceptClients(ln, &clients)
+	fmt.Printf("Server run on port %s\n", serverPort)
+
+	clients := make([]*network.Client, 0)
+
+	go network.AcceptClients(ln, &clients)
 
 	reader := bufio.NewReader(os.Stdin)
 	for {

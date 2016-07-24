@@ -12,7 +12,7 @@ func Read(conn net.Conn) {
 	for {
 		str, err := bufio.NewReader(conn).ReadString('\n')
 		if err != nil {
-			fmt.Printf("Connection lost\n")
+			fmt.Print("Connection lost\n")
 			os.Exit(1)
 		}
 		fmt.Printf(">")
@@ -35,10 +35,9 @@ func main() {
 		serverAddress = os.Args[1]
 	}
 
-
 	conn, err := net.Dial("tcp", serverAddress)
 	if err != nil {
-		fmt.Printf("Can't find server\n")
+		fmt.Print("Can't find server\n")
 		os.Exit(1)
 	}
 
